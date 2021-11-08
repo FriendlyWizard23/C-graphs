@@ -13,7 +13,10 @@
 #define TRUE 1
 #define FALSE 0
 
+////////////////////////////////////////////////
 ////////////// STRUCTURES //////////////////////
+////////////////////////////////////////////////
+
 struct node{
 	int vertex;
 	int weight;
@@ -76,7 +79,7 @@ int out_degree(Graph g,int source){
 * adds the edge from source to sink.
 * To make this implementation Undirected you can
 * either add some lines of code or call two times this method
-* reversing source and sink in the second invocation
+* exchange source and sink during the second invocation
 */
 void add_edge(Graph g,int source, int sink){
 	add_edge_weight(g,source,sink,0);
@@ -85,16 +88,48 @@ void add_edge(Graph g,int source, int sink){
 void add_edge_weight(Graph g,int source,int sink, int weight){
 	assert(source<=g->vertex_count);
 	assert(sink<=g->vertex_count);
+	assert(sink!=source);
+	if(has_edge(g,source,sink))return;
 	struct node* nn=createNode(sink);
 	nn->next=g->list[source];
 	nn->weight=weight;
 	g->list[source]=nn;
 	g->edges_count++;
 }
+
+/*
+* this method has the same mechanism of a linked-list (which it is)
+*/
+void remove_edge(Graph g,int source,int sink){
+	assert(g);
+	assert((source<g->vertex_count)&&(source>=0));
+	assert((sink<g->vertex_count)&&(sink>=0));
+	assert(sink!=source);
+	struct node* tmp=g->list[source];
+	if(tmp==NULL)
+		return;
+	if(tmp->vertex==sink){
+		g->list[source]=tmp->next;
+		g->edges_count--;
+	}
+	else{
+		struct node* prev=tmp;
+		tmp=tmp->next;
+		while(tmp){
+			if(tmp->vertex==sink){
+				prev=tmp->next;
+				free(tmp);
+				--g->edges_count;
+				break;
+			}
+			tmp=tmp->next;
+		}
+	}
+}
 int has_edge(Graph g, int source, int sink){
 	assert(g);
 	assert((source>=0)&&(source<=g->vertex_count));
-	assert((sink>=0)&&(sink<=g->edges_count));
+	assert((sink>=0)&&(sink<=g->vertex_count));
 	struct node* tmp;
 	tmp=g->list[source];
 	while(tmp){
